@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Task } from '../../components/TaskList';
 
-let tasks: any[] = [];
+const tasks: Task[] = [];
 
 export async function GET() {
   return NextResponse.json(tasks);
