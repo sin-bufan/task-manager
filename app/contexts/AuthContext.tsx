@@ -1,9 +1,8 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-
+import { createClient } from '@/utils/supabase/client';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -20,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
+  const supabase = createClient();
   useEffect(() => {
     // 检查当前会话
     supabase.auth.getSession().then(({ data: { session } }) => {

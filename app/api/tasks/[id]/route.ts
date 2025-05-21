@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { taskOperations } from '@/lib/supabase';
+import { taskOperations, TaskOperationError } from '@/lib/supabase';
 
 // GET /api/tasks/[id] - 获取单个任务
 export async function GET(
@@ -7,7 +7,8 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const task = await taskOperations.getTask(params.id);
+        const { id } = await params;
+        const task = await taskOperations.getTask(id);
         if (!task) {
             return NextResponse.json(
                 { error: 'Task not found' },
@@ -17,6 +18,9 @@ export async function GET(
         return NextResponse.json(task);
     } catch (error) {
         console.error('Error fetching task:', error);
+        if (error instanceof TaskOperationError) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
         return NextResponse.json(
             { error: 'Failed to fetch task' },
             { status: 500 }
@@ -31,16 +35,17 @@ export async function PUT(
 ) {
     try {
         const body = await request.json();
-        const task = await taskOperations.updateTask(params.id, body);
-        if (!task) {
-            return NextResponse.json(
-                { error: 'Task not found' },
-                { status: 404 }
-            );
-        }
+        const { id } = await params;
+        const task = await taskOperations.updateTask(id, body);
         return NextResponse.json(task);
     } catch (error) {
         console.error('Error updating task:', error);
+        if (error instanceof TaskOperationError) {
+            if (error.message === 'Unauthorized') {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
         return NextResponse.json(
             { error: 'Failed to update task' },
             { status: 500 }
@@ -54,10 +59,17 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     try {
-        await taskOperations.deleteTask(params.id);
-        return new NextResponse(null, { status: 204 });
+        const { id } = await params;
+        await taskOperations.deleteTask(id);
+        return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting task:', error);
+        if (error instanceof TaskOperationError) {
+            if (error.message === 'Unauthorized') {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
         return NextResponse.json(
             { error: 'Failed to delete task' },
             { status: 500 }

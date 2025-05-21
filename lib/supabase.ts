@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
+import { createClient as createServerClient } from '@/utils/supabase/server'
+import { createClient as createBrowserClient } from '@/utils/supabase/client'
 // Task type definition
 export type Task = {
     id: string;
@@ -15,47 +10,69 @@ export type Task = {
     due_date: string | null;
     created_at: string;
     updated_at: string;
+    user_id: string;
 };
+
+// Custom error type for task operations
+export class TaskOperationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'TaskOperationError';
+    }
+}
 
 // Task operations
 export const taskOperations = {
-    // Get all tasks
+    // 获取所有任务（允许匿名访问）
     async getAllTasks() {
+        const supabase = await createBrowserClient();
         const { data, error } = await supabase
             .from('tasks')
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) throw new TaskOperationError(error.message);
         return data as Task[];
     },
 
-    // Get a single task
+    // 获取单个任务（允许匿名访问）
     async getTask(id: string) {
+        const supabase = await createBrowserClient();
         const { data, error } = await supabase
             .from('tasks')
             .select('*')
             .eq('id', id)
             .single();
         
-        if (error) throw error;
+        if (error) throw new TaskOperationError(error.message);
         return data as Task;
     },
 
-    // Create a new task
-    async createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) {
+    // 创建新任务（需要认证）
+    async createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>) {
+        const supabase = await createServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new TaskOperationError('Unauthorized');
+        
         const { data, error } = await supabase
             .from('tasks')
-            .insert([task])
+            .insert([{
+                ...task,
+                user_id: user.id,
+            }])
             .select()
             .single();
-        
-        if (error) throw error;
+        console.log(data, error);
+        if (error) throw new TaskOperationError(error.message);
         return data as Task;
     },
 
-    // Update a task
+    // 更新任务（需要认证）
     async updateTask(id: string, updates: Partial<Task>) {
+        const supabase = await createServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new TaskOperationError('Unauthorized');
+
         const { data, error } = await supabase
             .from('tasks')
             .update(updates)
@@ -63,17 +80,21 @@ export const taskOperations = {
             .select()
             .single();
         
-        if (error) throw error;
+        if (error) throw new TaskOperationError(error.message);
         return data as Task;
     },
 
-    // Delete a task
+    // 删除任务（需要认证）
     async deleteTask(id: string) {
+        const supabase = await createServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new TaskOperationError('Unauthorized');
+
         const { error } = await supabase
             .from('tasks')
             .delete()
             .eq('id', id);
         
-        if (error) throw error;
+        if (error) throw new TaskOperationError(error.message);
     }
 }; 

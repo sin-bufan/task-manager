@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,16 +24,16 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       const { error } = await supabase.auth.signUp({
         email,
         password,
       });
 
       if (error) throw error;
-
       router.push('/login?registered=true');
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : '注册过程中发生错误');
     } finally {
       setLoading(false);
     }
