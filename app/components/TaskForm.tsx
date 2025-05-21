@@ -1,5 +1,6 @@
 "use client";
-import { createTask, Task, updateTask } from "@/lib/tasks/actions";
+import { createTask, updateTask } from "@/lib/tasks/actions";
+import { Task } from "@/lib/tasks/types";
 import React, { useState } from "react";
 
 interface TaskFormProps {
@@ -16,7 +17,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task }) => {
     task?.priority || "medium"
   );
   const [dueDate, setDueDate] = useState(task?.due_date || "");
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {

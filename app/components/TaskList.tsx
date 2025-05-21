@@ -1,8 +1,9 @@
 "use client";
 import React, { use, useState } from "react";
-import { Task, deleteTask } from "@/lib/tasks/actions";
+import { deleteTask } from "@/lib/tasks/actions";
 import { useAuth } from "../contexts/AuthContext";
 import TaskForm from "./TaskForm";
+import { Task } from "@/lib/tasks/types";
 
 interface TaskListProps {
   tasks: Promise<Task[]>;
