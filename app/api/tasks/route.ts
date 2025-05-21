@@ -1,37 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Task } from '../../components/TaskList';
+import { NextResponse } from 'next/server';
+import { taskOperations, TaskOperationError } from '@/lib/tasks';
 
-const tasks: Task[] = [];
-
+// GET /api/tasks - 获取所有任务
 export async function GET() {
-  return NextResponse.json(tasks);
+  try {
+    const tasks = await taskOperations.getAllTasks();
+    return NextResponse.json(tasks);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    if (error instanceof TaskOperationError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json(
+      { error: 'Failed to fetch tasks' },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(req: NextRequest) {
-  const { title, description, completed } = await req.json();
-  const newTask = {
-    id: Date.now().toString(),
-    title,
-    description,
-    completed: !!completed,
-    createdAt: new Date().toISOString(),
-  };
-  tasks.push(newTask);
-  return NextResponse.json(newTask, { status: 201 });
-}
-
-export async function PUT(req: NextRequest) {
-  const { id, title, description, completed } = await req.json();
-  const idx = tasks.findIndex(t => t.id === id);
-  if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  tasks[idx] = { ...tasks[idx], title, description, completed };
-  return NextResponse.json(tasks[idx]);
-}
-
-export async function DELETE(req: NextRequest) {
-  const { id } = await req.json();
-  const idx = tasks.findIndex(t => t.id === id);
-  if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  const deleted = tasks.splice(idx, 1)[0];
-  return NextResponse.json(deleted);
+// POST /api/tasks - 创建新任务
+export async function POST(request: Request) {
+  try {
+    const { title, description, status, priority, due_date } = await request.json();
+    const task = await taskOperations.createTask({
+      title,
+      description,
+      status,
+      priority,
+      due_date,
+    });
+    return NextResponse.json(task);
+  } catch (error) {
+    console.error('Error creating task:', error);
+    if (error instanceof TaskOperationError) {
+      if (error.message === 'Unauthorized') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
 } 
