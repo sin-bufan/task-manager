@@ -1,40 +1,52 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { Task } from '@/lib/tasks';
+"use client";
+import { createTask, Task, updateTask } from "@/lib/tasks/actions";
+import React, { useState } from "react";
 
 interface TaskFormProps {
-  initialTask?: Task;
-  onSubmit: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => void;
-  onCancel: () => void;
+  task?: Task;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) => {
-  const [title, setTitle] = useState(initialTask?.title || '');
-  const [description, setDescription] = useState(initialTask?.description || '');
-  const [status, setStatus] = useState<'pending' | 'in_progress' | 'completed'>(initialTask?.status || 'pending');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>(initialTask?.priority || 'medium');
-  const [dueDate, setDueDate] = useState(initialTask?.due_date ? new Date(initialTask.due_date).toISOString().split('T')[0] : '');
-
-  useEffect(() => {
-    if (initialTask) {
-      setTitle(initialTask.title);
-      setDescription(initialTask.description || '');
-      setStatus(initialTask.status);
-      setPriority(initialTask.priority);
-      setDueDate(initialTask.due_date ? new Date(initialTask.due_date).toISOString().split('T')[0] : '');
-    }
-  }, [initialTask]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+const TaskForm: React.FC<TaskFormProps> = ({ task }) => {
+  const [title, setTitle] = useState(task?.title || "");
+  const [description, setDescription] = useState(task?.description || "");
+  const [status, setStatus] = useState<"pending" | "in_progress" | "completed">(
+    task?.status || "pending"
+  );
+  const [priority, setPriority] = useState<"low" | "medium" | "high">(
+    task?.priority || "medium"
+  );
+  const [dueDate, setDueDate] = useState(task?.due_date || "");
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title,
-      description: description || null,
-      status,
-      priority,
-      due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      user_id: initialTask?.user_id || '' 
-    });
+    try {
+      if (task) {
+        await updateTask(task.id, {
+          title,
+          description: description || null,
+          status,
+          priority,
+          due_date: dueDate ? new Date(dueDate).toISOString() : null,
+        });
+      } else {
+        await createTask({
+          title,
+          description: description || null,
+          status,
+          priority,
+          due_date: dueDate ? new Date(dueDate).toISOString() : null,
+        });
+      }
+
+      // 重置表单
+      setTitle("");
+      setDescription("");
+      setStatus("pending");
+      setPriority("medium");
+      setDueDate("");
+    } catch (error) {
+      console.error("Error submitting task:", error);
+    }
   };
 
   return (
@@ -44,7 +56,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         <input
           className="w-full border px-2 py-1 rounded"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           required
         />
       </div>
@@ -53,7 +65,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         <textarea
           className="w-full border px-2 py-1 rounded"
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </div>
       <div>
@@ -61,7 +73,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         <select
           className="w-full border px-2 py-1 rounded"
           value={status}
-          onChange={e => setStatus(e.target.value as 'pending' | 'in_progress' | 'completed')}
+          onChange={(e) =>
+            setStatus(e.target.value as "pending" | "in_progress" | "completed")
+          }
         >
           <option value="pending">待处理</option>
           <option value="in_progress">进行中</option>
@@ -73,7 +87,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         <select
           className="w-full border px-2 py-1 rounded"
           value={priority}
-          onChange={e => setPriority(e.target.value as 'low' | 'medium' | 'high')}
+          onChange={(e) =>
+            setPriority(e.target.value as "low" | "medium" | "high")
+          }
         >
           <option value="low">低</option>
           <option value="medium">中</option>
@@ -86,15 +102,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
           type="date"
           className="w-full border px-2 py-1 rounded"
           value={dueDate}
-          onChange={e => setDueDate(e.target.value)}
+          onChange={(e) => setDueDate(e.target.value)}
         />
       </div>
       <div className="flex gap-2">
-        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded">保存</button>
-        <button type="button" onClick={onCancel} className="bg-gray-300 px-4 py-1 rounded">取消</button>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-1 rounded"
+        >
+          保存
+        </button>
       </div>
     </form>
   );
 };
 
-export default TaskForm; 
+export default TaskForm;

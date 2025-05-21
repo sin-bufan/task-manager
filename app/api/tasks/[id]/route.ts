@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { taskOperations, TaskOperationError } from '@/lib/tasks';
+import { taskOperations, TaskOperationError } from '@/lib/tasks/actions';
 
 // GET /api/tasks/[id] - 获取单个任务
 export async function GET(
