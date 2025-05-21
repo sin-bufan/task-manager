@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { taskOperations, TaskOperationError } from '@/lib/tasks/actions';
+import { deleteTask, getTask, updateTask } from '@/lib/tasks/actions';
+import { TaskOperationError } from '@/lib/tasks/types';
 
 // GET /api/tasks/[id] - 获取单个任务
 export async function GET(
@@ -8,7 +9,7 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const task = await taskOperations.getTask(id);
+        const task = await getTask(id);
         if (!task) {
             return NextResponse.json(
                 { error: 'Task not found' },
@@ -36,7 +37,7 @@ export async function PUT(
     try {
         const body = await request.json();
         const { id } = await params;
-        const task = await taskOperations.updateTask(id, body);
+        const task = await updateTask(id, body);
         return NextResponse.json(task);
     } catch (error) {
         console.error('Error updating task:', error);
@@ -60,7 +61,7 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        await taskOperations.deleteTask(id);
+        await deleteTask(id);
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting task:', error);

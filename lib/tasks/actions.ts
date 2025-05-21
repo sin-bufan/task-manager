@@ -2,28 +2,8 @@
 import { createClient as createServerClient } from "@/utils/supabase/server";
 import { createClient as createBrowserClient } from "@/utils/supabase/client";
 import { revalidatePath } from "next/cache";
-// Task type definition
-export type Task = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: "pending" | "in_progress" | "completed";
-  priority: "low" | "medium" | "high";
-  due_date: string | null;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-};
+import { Task, TaskOperationError } from "./types";
 
-// Custom error type for task operations
-class TaskOperationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "TaskOperationError";
-  }
-}
-
-// Task operations
 // 获取所有任务（允许匿名访问）
 export async function getAllTasks() {
   const supabase = await createBrowserClient();
