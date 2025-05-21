@@ -7,21 +7,43 @@ create table if not exists tasks (
     priority text not null default 'medium',
     due_date timestamp with time zone,
     created_at timestamp with time zone default now(),
-    updated_at timestamp with time zone default now()
+    updated_at timestamp with time zone default now(),
+    user_id uuid references auth.users(id) on delete cascade
 );
 
 -- Create index on status for faster queries
 create index if not exists tasks_status_idx on tasks(status);
 
+-- Create index on user_id for faster queries
+create index if not exists tasks_user_id_idx on tasks(user_id);
+
 -- Enable Row Level Security (RLS)
 alter table tasks enable row level security;
 
--- Create policy to allow all operations for authenticated users
-create policy "Enable all operations for authenticated users" on tasks
-    for all
+-- Create policy to allow all users to read tasks
+create policy "Allow all users to read tasks"
+    on tasks for select
+    to authenticated, anon
+    using (true);
+
+-- Create policy to allow authenticated users to insert their own tasks
+create policy "Allow authenticated users to insert their own tasks"
+    on tasks for insert
     to authenticated
-    using (true)
-    with check (true);
+    with check (auth.uid() = user_id);
+
+-- Create policy to allow users to update their own tasks
+create policy "Allow users to update their own tasks"
+    on tasks for update
+    to authenticated
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
+
+-- Create policy to allow users to delete their own tasks
+create policy "Allow users to delete their own tasks"
+    on tasks for delete
+    to authenticated
+    using (auth.uid() = user_id);
 
 -- Create function to automatically update updated_at timestamp
 create or replace function update_updated_at_column()
