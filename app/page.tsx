@@ -12,10 +12,7 @@ export default async function Home() {
           <h1 className="text-3xl font-bold text-gray-900">任务管理系统</h1>
           <UserAuthButtons />
         </div>
-          <div className="mb-8">
-            <CreateTask />
-          </div>
-
+        <CreateTask />
         <TaskList tasks={tasks} />
       </div>
     </main>
