@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { taskOperations, TaskOperationError } from '@/lib/supabase';
+import { taskOperations, TaskOperationError } from '@/lib/tasks';
 
 // GET /api/tasks - 获取所有任务
 export async function GET() {

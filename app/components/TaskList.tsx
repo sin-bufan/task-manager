@@ -1,5 +1,5 @@
 import React from 'react';
-import { Task } from '@/lib/supabase';
+import { Task } from '@/lib/tasks';
 
 interface TaskListProps {
   tasks: Task[];

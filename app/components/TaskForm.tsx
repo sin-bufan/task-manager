@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Task } from '@/lib/supabase';
+import { Task } from '@/lib/tasks';
 
 interface TaskFormProps {
   initialTask?: Task;
@@ -32,7 +32,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
       description: description || null,
       status,
       priority,
-      due_date: dueDate ? new Date(dueDate).toISOString() : null
+      due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      user_id: initialTask?.user_id || '' 
     });
   };
 

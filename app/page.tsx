@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
-import { Task } from '@/lib/supabase';
+import { Task } from '@/lib/tasks';
 import { useAuth } from './contexts/AuthContext';
 import Link from 'next/link';
 
