@@ -4,7 +4,7 @@ import { taskOperations, TaskOperationError } from '@/lib/tasks';
 // GET /api/tasks/[id] - 获取单个任务
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params;
@@ -31,7 +31,7 @@ export async function GET(
 // PUT /api/tasks/[id] - 更新任务
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const body = await request.json();
@@ -56,7 +56,7 @@ export async function PUT(
 // DELETE /api/tasks/[id] - 删除任务
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params;
