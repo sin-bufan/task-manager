@@ -25,7 +25,7 @@ const CreateTask: React.FC = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" size={"lg"}>
           创建任务
         </Button>
       </DialogTrigger>
