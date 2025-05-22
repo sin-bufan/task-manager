@@ -1,10 +1,9 @@
 "use client";
-import React, { use, useState } from "react";
-import { deleteTask } from "@/lib/tasks/actions";
+import React, { use } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import TaskForm from "./TaskForm";
+import EditTask from "./EditTask";
+import DeleteTask from "./DeleteTask";
 import { Task } from "@/lib/tasks/types";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -13,25 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 interface TaskListProps {
   tasks: Promise<Task[]>;
@@ -40,8 +20,6 @@ interface TaskListProps {
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
   const allTasks = use(tasks);
   const { user } = useAuth();
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -69,19 +47,6 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
     }
   };
 
-  const handleEditSuccess = () => {
-    setEditingTask(null);
-  };
-
-  const handleDelete = async (taskId: string) => {
-    try {
-      await deleteTask(taskId);
-      setDeletingTaskId(null);
-    } catch (error) {
-      console.error('删除任务失败:', error);
-    }
-  };
-
   return (
     <div className="space-y-4">
       {allTasks.map((task) => (
@@ -93,58 +58,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
               </div>
               {user && (
                 <div className="flex space-x-2">
-                  <Dialog open={editingTask?.id === task.id} onOpenChange={(open) => !open && setEditingTask(null)}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                        onClick={() => setEditingTask(task)}
-                      >
-                        编辑
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>编辑任务</DialogTitle>
-                        <DialogDescription>
-                          修改任务信息。点击保存按钮完成编辑。
-                        </DialogDescription>
-                      </DialogHeader>
-                      <TaskForm task={task} onSuccess={handleEditSuccess} />
-                    </DialogContent>
-                  </Dialog>
-                  <AlertDialog open={deletingTaskId === task.id} onOpenChange={(open) => !open && setDeletingTaskId(null)}>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                        onClick={() => setDeletingTaskId(task.id)}
-                      >
-                        删除
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>确认删除</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          您确定要删除这个任务吗？此操作无法撤销。
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setDeletingTaskId(null)}>
-                          取消
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(task.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          删除
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <EditTask task={task} />
+                  <DeleteTask taskId={task.id} />
                 </div>
               )}
             </div>
