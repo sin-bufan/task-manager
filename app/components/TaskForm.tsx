@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 
 interface TaskFormProps {
   task?: Task;
+  onSuccess?: () => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ task }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
   const [status, setStatus] = useState<"pending" | "in_progress" | "completed">(
@@ -46,6 +47,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ task }) => {
       setStatus("pending");
       setPriority("medium");
       setDueDate("");
+
+      // 调用成功回调
+      onSuccess?.();
     } catch (error) {
       console.error("Error submitting task:", error);
     }

@@ -12,6 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface TaskListProps {
   tasks: Promise<Task[]>;
@@ -20,7 +28,7 @@ interface TaskListProps {
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
   const allTasks = use(tasks);
   const { user } = useAuth();
-  const [editTask, setEditTask] = useState<Task|null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -48,6 +56,10 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
     }
   };
 
+  const handleEditSuccess = () => {
+    setEditingTask(null);
+  };
+
   return (
     <div className="space-y-4">
       {allTasks.map((task) => (
@@ -59,14 +71,27 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
               </div>
               {user && (
                 <div className="flex space-x-2">
-                  <Button
-                    onClick={() => setEditTask(task)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                  >
-                    编辑
-                  </Button>
+                  <Dialog open={editingTask?.id === task.id} onOpenChange={(open) => !open && setEditingTask(null)}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                        onClick={() => setEditingTask(task)}
+                      >
+                        编辑
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>编辑任务</DialogTitle>
+                        <DialogDescription>
+                          修改任务信息。点击保存按钮完成编辑。
+                        </DialogDescription>
+                      </DialogHeader>
+                      <TaskForm task={task} onSuccess={handleEditSuccess} />
+                    </DialogContent>
+                  </Dialog>
                   <Button
                     onClick={() => deleteTask(task.id)}
                     variant="ghost"
@@ -111,7 +136,6 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
           </CardContent>
         </Card>
       ))}
-      {editTask && <TaskForm task={editTask} />}
     </div>
   );
 };
