@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import TaskForm from "./TaskForm";
+import { Button } from "@/components/ui/button";
 
 const CreateTask: React.FC = () => {
   const { user } = useAuth();
@@ -9,12 +10,12 @@ const CreateTask: React.FC = () => {
   return (
     <div className="flex items-center space-x-4">
       {user && (
-        <button
+        <Button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 text-sm text-red-600 hover:text-red-800"
+          variant="default"
         >
           创建任务
-        </button>
+        </Button>
       )}
       {showForm && <TaskForm />}
     </div>

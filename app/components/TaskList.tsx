@@ -4,6 +4,7 @@ import { deleteTask } from "@/lib/tasks/actions";
 import { useAuth } from "../contexts/AuthContext";
 import TaskForm from "./TaskForm";
 import { Task } from "@/lib/tasks/types";
+import { Button } from "@/components/ui/button";
 
 interface TaskListProps {
   tasks: Promise<Task[]>;
@@ -77,18 +78,20 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
             </div>
             {user && (
               <div className="flex space-x-2 ml-4">
-                <button
+                <Button
                   onClick={() => setEditTask(task)}
-                  className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800"
+                  variant="ghost"
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                 >
                   编辑
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => deleteTask(task.id)}
-                  className="px-3 py-1 text-sm text-red-600 hover:text-red-800"
+                  variant="ghost"
+                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
                 >
                   删除
-                </button>
+                </Button>
               </div>
             )}
           </div>

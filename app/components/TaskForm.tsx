@@ -2,6 +2,7 @@
 import { createTask, updateTask } from "@/lib/tasks/actions";
 import { Task } from "@/lib/tasks/types";
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface TaskFormProps {
   task?: Task;
@@ -107,12 +108,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ task }) => {
         />
       </div>
       <div className="flex gap-2">
-        <button
+        <Button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-1 rounded"
+          variant="default"
         >
           保存
-        </button>
+        </Button>
       </div>
     </form>
   );

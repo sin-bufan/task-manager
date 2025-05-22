@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { Button } from "@/components/ui/button";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -94,22 +95,25 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full"
             >
               {loading ? '注册中...' : '注册'}
-            </button>
+            </Button>
           </div>
 
           <div className="text-center">
-            <Link
-              href="/login"
-              className="text-sm text-blue-600 hover:text-blue-500"
+            <Button
+              asChild
+              variant="link"
+              className="text-blue-600 hover:text-blue-500"
             >
-              已有账号？立即登录
-            </Link>
+              <Link href="/login">
+                已有账号？立即登录
+              </Link>
+            </Button>
           </div>
         </form>
       </div>

@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from "@/components/ui/button";
 
 const UserAuthButtons: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -11,20 +12,24 @@ const UserAuthButtons: React.FC = () => {
       {user ? (
         <>
           <span className="text-gray-600">欢迎, {user.email}</span>
-          <button
+          <Button
             onClick={() => signOut()}
-            className="px-4 py-2 text-sm text-red-600 hover:text-red-800"
+            variant="ghost"
+            className="text-red-600 hover:text-red-800 hover:bg-red-50"
           >
             退出登录
-          </button>
+          </Button>
         </>
       ) : (
-        <Link
-          href="/login"
-          className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800"
+        <Button
+          asChild
+          variant="ghost"
+          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
         >
-          登录
-        </Link>
+          <Link href="/login">
+            登录
+          </Link>
+        </Button>
       )}
     </div>
   );
