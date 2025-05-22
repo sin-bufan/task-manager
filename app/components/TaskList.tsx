@@ -5,6 +5,13 @@ import { useAuth } from "../contexts/AuthContext";
 import TaskForm from "./TaskForm";
 import { Task } from "@/lib/tasks/types";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface TaskListProps {
   tasks: Promise<Task[]>;
@@ -44,58 +51,65 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
   return (
     <div className="space-y-4">
       {allTasks.map((task) => (
-        <div
-          key={task.id}
-          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-        >
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {task.title}
-              </h3>
-              <p className="mt-1 text-gray-600">{task.description}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${getPriorityColor(
-                    task.priority
-                  )}`}
-                >
-                  {task.priority}
-                </span>
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${getStatusColor(
-                    task.status
-                  )}`}
-                >
-                  {task.status}
-                </span>
-                {task.due_date && (
-                  <span className="px-2 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-                    截止: {new Date(task.due_date).toLocaleDateString()}
-                  </span>
-                )}
+        <Card key={task.id} className="hover:shadow-md transition-shadow">
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-lg">{task.title}</CardTitle>
               </div>
+              {user && (
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => setEditTask(task)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                  >
+                    编辑
+                  </Button>
+                  <Button
+                    onClick={() => deleteTask(task.id)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                  >
+                    删除
+                  </Button>
+                </div>
+              )}
             </div>
-            {user && (
-              <div className="flex space-x-2 ml-4">
-                <Button
-                  onClick={() => setEditTask(task)}
-                  variant="ghost"
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                >
-                  编辑
-                </Button>
-                <Button
-                  onClick={() => deleteTask(task.id)}
-                  variant="ghost"
-                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                >
-                  删除
-                </Button>
-              </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {task.description && (
+              <CardDescription>
+                {task.description}
+              </CardDescription>
             )}
-          </div>
-        </div>
+            <div className="flex flex-wrap gap-2">
+              <span
+                className={`px-2 py-1 rounded-full text-sm ${getPriorityColor(
+                  task.priority
+                )}`}
+              >
+                {task.priority === "high" ? "高优先级" : 
+                 task.priority === "medium" ? "中优先级" : "低优先级"}
+              </span>
+              <span
+                className={`px-2 py-1 rounded-full text-sm ${getStatusColor(
+                  task.status
+                )}`}
+              >
+                {task.status === "completed" ? "已完成" :
+                 task.status === "in_progress" ? "进行中" : "待处理"}
+              </span>
+              {task.due_date && (
+                <span className="px-2 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                  截止: {new Date(task.due_date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       ))}
       {editTask && <TaskForm task={editTask} />}
     </div>
