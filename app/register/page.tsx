@@ -1,34 +1,56 @@
 'use client'
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useState } from 'react';
+
+const formSchema = z.object({
+  email: z.string().email("请输入有效的邮箱地址"),
+  password: z.string().min(6, "密码至少需要6个字符"),
+  confirmPassword: z.string().min(6, "密码至少需要6个字符"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "两次输入的密码不一致",
+  path: ["confirmPassword"],
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (values: FormValues) => {
     setError(null);
-
-    if (password !== confirmPassword) {
-      setError('两次输入的密码不一致');
-      return;
-    }
-
     setLoading(true);
 
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: values.email,
+        password: values.password,
       });
 
       if (error) throw error;
@@ -46,55 +68,55 @@ export default function RegisterPage() {
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">注册</h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded text-sm">
-              {error}
-            </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                邮箱
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                密码
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                确认密码
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 text-red-500 p-3 rounded text-sm">
+                {error}
+              </div>
+            )}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>邮箱</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="请输入邮箱" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>密码</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="请输入密码" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>确认密码</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="请再次输入密码" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <Button
               type="submit"
               disabled={loading}
@@ -102,20 +124,20 @@ export default function RegisterPage() {
             >
               {loading ? '注册中...' : '注册'}
             </Button>
-          </div>
 
-          <div className="text-center">
-            <Button
-              asChild
-              variant="link"
-              className="text-blue-600 hover:text-blue-500"
-            >
-              <Link href="/login">
-                已有账号？立即登录
-              </Link>
-            </Button>
-          </div>
-        </form>
+            <div className="text-center">
+              <Button
+                asChild
+                variant="link"
+                className="text-blue-600 hover:text-blue-500"
+              >
+                <Link href="/login">
+                  已有账号？立即登录
+                </Link>
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );
