@@ -1,7 +1,7 @@
 "use client";
 import { createTask, updateTask } from "@/lib/tasks/actions";
 import { Task } from "@/lib/tasks/types";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -49,6 +49,7 @@ interface TaskFormProps {
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
+  const [isSubmiting, setIsSubmiting] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,6 +63,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      setIsSubmiting(true);
       if (task) {
         await updateTask(task.id, {
           title: values.title,
@@ -80,10 +82,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
         });
       }
 
-      form.reset();
       onSuccess?.();
+      form.reset();
     } catch (error) {
       console.error("Error submitting task:", error);
+      setIsSubmiting(false);
     }
   };
 
@@ -210,8 +213,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          保存
+        <Button type="submit" className="w-full" disabled={isSubmiting}>
+          {isSubmiting ? "保存中" : "保存"}
         </Button>
       </form>
     </Form>

@@ -22,16 +22,18 @@ export default function DeleteTask({ taskId }: DeleteTaskProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleDelete = async (event:any) => {
+    event.preventDefault()
     try {
       setIsDeleting(true);
       await deleteTask(taskId);
       // 删除成功后再关闭对话框
-      setIsOpen(false);
     } catch (error) {
       console.error('删除任务失败:', error);
-    } finally {
       setIsDeleting(false);
+    } finally {
+      // setIsOpen(false);
     }
   };
 
