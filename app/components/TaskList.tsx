@@ -1,65 +1,104 @@
-import React from 'react';
-import { Task } from '@/lib/tasks';
+"use client";
+import React, { use } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import EditTask from "./EditTask";
+import DeleteTask from "./DeleteTask";
+import { Task } from "@/lib/tasks/types";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface TaskListProps {
-  tasks: Task[];
-  onEdit: (task: Task) => void;
-  onDelete: (id: string) => void;
-  onToggle: (id: string) => void;
-  isAuthenticated: boolean;
+  tasks: Promise<Task[]>;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ 
-  tasks, 
-  onEdit, 
-  onDelete, 
-  onToggle,
-  isAuthenticated 
-}) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
+  const allTasks = use(tasks);
+  const { user } = useAuth();
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-destructive/10 text-destructive hover:bg-destructive/20";
+      case "medium":
+        return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+      case "low":
+        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+      default:
+        return "bg-muted text-muted-foreground hover:bg-muted/80";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+      case "in_progress":
+        return "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20";
+      case "pending":
+        return "bg-muted text-muted-foreground hover:bg-muted/80";
+      default:
+        return "bg-muted text-muted-foreground hover:bg-muted/80";
+    }
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <ul>
-        {tasks.map((task) => (
-          <li key={task.id} className="border-b py-4 flex justify-between items-center">
-            <div>
-              <h3 className={`font-bold text-lg ${task.status === 'completed' ? 'line-through text-gray-400' : ''}`}>
-                {task.title}
-              </h3>
-              <p className="text-sm text-gray-600">{task.description}</p>
-              <div className="flex gap-2 text-xs text-gray-400">
-                <span>优先级: {task.priority}</span>
-                <span>状态: {task.status}</span>
-                {task.due_date && <span>截止日期: {new Date(task.due_date).toLocaleDateString()}</span>}
-                <span>创建时间: {new Date(task.created_at).toLocaleString()}</span>
+    <div className="space-y-4">
+      {allTasks.map((task) => (
+        <Card key={task.id} className="hover:shadow-md transition-shadow">
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-lg">{task.title}</CardTitle>
               </div>
+              {user && (
+                <div className="flex space-x-2">
+                  <EditTask task={task} />
+                  <DeleteTask taskId={task.id} />
+                </div>
+              )}
             </div>
-            {isAuthenticated && (
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => onToggle(task.id)} 
-                  className="px-2 py-1 text-xs bg-blue-100 rounded hover:bg-blue-200 transition-colors"
-                >
-                  {task.status === 'completed' ? '标记未完成' : '标记完成'}
-                </button>
-                <button 
-                  onClick={() => onEdit(task)} 
-                  className="px-2 py-1 text-xs bg-yellow-100 rounded hover:bg-yellow-200 transition-colors"
-                >
-                  编辑
-                </button>
-                <button 
-                  onClick={() => onDelete(task.id)} 
-                  className="px-2 py-1 text-xs bg-red-100 rounded hover:bg-red-200 transition-colors"
-                >
-                  删除
-                </button>
-              </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {task.description && (
+              <CardDescription>
+                {task.description}
+              </CardDescription>
             )}
-          </li>
-        ))}
-      </ul>
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant="secondary"
+                className={getPriorityColor(task.priority)}
+              >
+                {task.priority === "high" ? "高优先级" : 
+                 task.priority === "medium" ? "中优先级" : "低优先级"}
+              </Badge>
+              <Badge
+                variant="secondary"
+                className={getStatusColor(task.status)}
+              >
+                {task.status === "completed" ? "已完成" :
+                 task.status === "in_progress" ? "进行中" : "待处理"}
+              </Badge>
+              {task.due_date && (
+                <Badge
+                  variant="secondary"
+                  className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20"
+                >
+                  截止: {new Date(task.due_date).toLocaleDateString('zh-CN')}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
 
-export default TaskList; 
+export default TaskList;

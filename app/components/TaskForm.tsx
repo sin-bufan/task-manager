@@ -1,100 +1,182 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { Task } from '@/lib/tasks';
+"use client";
+import { createTask, updateTask } from "@/lib/tasks/actions";
+import { Task } from "@/lib/tasks/types";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const formSchema = z.object({
+  title: z.string().min(1, "标题不能为空"),
+  description: z.string().optional(),
+  status: z.enum(["pending", "in_progress", "completed"]),
+  priority: z.enum(["low", "medium", "high"]),
+  due_date: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface TaskFormProps {
-  initialTask?: Task;
-  onSubmit: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => void;
-  onCancel: () => void;
+  task?: Task;
+  onSuccess?: () => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) => {
-  const [title, setTitle] = useState(initialTask?.title || '');
-  const [description, setDescription] = useState(initialTask?.description || '');
-  const [status, setStatus] = useState<'pending' | 'in_progress' | 'completed'>(initialTask?.status || 'pending');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>(initialTask?.priority || 'medium');
-  const [dueDate, setDueDate] = useState(initialTask?.due_date ? new Date(initialTask.due_date).toISOString().split('T')[0] : '');
+const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
+  const [isSubmiting, setIsSubmiting] = useState(false);
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: task?.title || "",
+      description: task?.description || "",
+      status: task?.status || "pending",
+      priority: task?.priority || "medium",
+      due_date: task?.due_date || "",
+    },
+  });
 
-  useEffect(() => {
-    if (initialTask) {
-      setTitle(initialTask.title);
-      setDescription(initialTask.description || '');
-      setStatus(initialTask.status);
-      setPriority(initialTask.priority);
-      setDueDate(initialTask.due_date ? new Date(initialTask.due_date).toISOString().split('T')[0] : '');
+  const onSubmit = async (values: FormValues) => {
+    try {
+      setIsSubmiting(true);
+      if (task) {
+        await updateTask(task.id, {
+          title: values.title,
+          description: values.description || null,
+          status: values.status,
+          priority: values.priority,
+          due_date: values.due_date || null,
+        });
+      } else {
+        await createTask({
+          title: values.title,
+          description: values.description || null,
+          status: values.status,
+          priority: values.priority,
+          due_date: values.due_date || null,
+        });
+      }
+
+      onSuccess?.();
+      form.reset();
+    } catch (error) {
+      console.error("Error submitting task:", error);
+      setIsSubmiting(false);
     }
-  }, [initialTask]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      title,
-      description: description || null,
-      status,
-      priority,
-      due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      user_id: initialTask?.user_id || '' 
-    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto">
-      <div>
-        <label className="block mb-1 font-bold">标题</label>
-        <input
-          className="w-full border px-2 py-1 rounded"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>标题</FormLabel>
+              <FormControl>
+                <Input placeholder="输入任务标题" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div>
-        <label className="block mb-1 font-bold">描述</label>
-        <textarea
-          className="w-full border px-2 py-1 rounded"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>描述</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="输入任务描述"
+                  className="resize-none"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div>
-        <label className="block mb-1 font-bold">状态</label>
-        <select
-          className="w-full border px-2 py-1 rounded"
-          value={status}
-          onChange={e => setStatus(e.target.value as 'pending' | 'in_progress' | 'completed')}
-        >
-          <option value="pending">待处理</option>
-          <option value="in_progress">进行中</option>
-          <option value="completed">已完成</option>
-        </select>
-      </div>
-      <div>
-        <label className="block mb-1 font-bold">优先级</label>
-        <select
-          className="w-full border px-2 py-1 rounded"
-          value={priority}
-          onChange={e => setPriority(e.target.value as 'low' | 'medium' | 'high')}
-        >
-          <option value="low">低</option>
-          <option value="medium">中</option>
-          <option value="high">高</option>
-        </select>
-      </div>
-      <div>
-        <label className="block mb-1 font-bold">截止日期</label>
-        <input
-          type="date"
-          className="w-full border px-2 py-1 rounded"
-          value={dueDate}
-          onChange={e => setDueDate(e.target.value)}
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>状态</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择任务状态" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="pending">待处理</SelectItem>
+                  <SelectItem value="in_progress">进行中</SelectItem>
+                  <SelectItem value="completed">已完成</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div className="flex gap-2">
-        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded">保存</button>
-        <button type="button" onClick={onCancel} className="bg-gray-300 px-4 py-1 rounded">取消</button>
-      </div>
-    </form>
+        <FormField
+          control={form.control}
+          name="priority"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>优先级</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择任务优先级" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="low">低</SelectItem>
+                  <SelectItem value="medium">中</SelectItem>
+                  <SelectItem value="high">高</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="due_date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>截止日期</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full" disabled={isSubmiting}>
+          {isSubmiting ? "保存中" : "保存"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 
-export default TaskForm; 
+export default TaskForm;

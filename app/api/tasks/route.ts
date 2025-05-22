@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { taskOperations, TaskOperationError } from '@/lib/tasks';
+import { createTask, getAllTasks } from '@/lib/tasks/actions';
+import { TaskOperationError } from '@/lib/tasks/types';
 
 // GET /api/tasks - 获取所有任务
 export async function GET() {
   try {
-    const tasks = await taskOperations.getAllTasks();
+    const tasks = await getAllTasks();
     return NextResponse.json(tasks);
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -22,7 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { title, description, status, priority, due_date } = await request.json();
-    const task = await taskOperations.createTask({
+    const task = await createTask({
       title,
       description,
       status,
