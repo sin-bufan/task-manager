@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import TaskForm from "./TaskForm";
 import { Task } from "@/lib/tasks/types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -33,26 +34,26 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/10 text-destructive hover:bg-destructive/20";
       case "medium":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
       case "low":
-        return "bg-green-100 text-green-800";
+        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground hover:bg-muted/80";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-800";
+        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
       case "in_progress":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20";
       case "pending":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground hover:bg-muted/80";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground hover:bg-muted/80";
     }
   };
 
@@ -111,26 +112,27 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
               </CardDescription>
             )}
             <div className="flex flex-wrap gap-2">
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${getPriorityColor(
-                  task.priority
-                )}`}
+              <Badge
+                variant="secondary"
+                className={getPriorityColor(task.priority)}
               >
                 {task.priority === "high" ? "高优先级" : 
                  task.priority === "medium" ? "中优先级" : "低优先级"}
-              </span>
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${getStatusColor(
-                  task.status
-                )}`}
+              </Badge>
+              <Badge
+                variant="secondary"
+                className={getStatusColor(task.status)}
               >
                 {task.status === "completed" ? "已完成" :
                  task.status === "in_progress" ? "进行中" : "待处理"}
-              </span>
+              </Badge>
               {task.due_date && (
-                <span className="px-2 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-                  截止: {new Date(task.due_date).toLocaleDateString()}
-                </span>
+                <Badge
+                  variant="secondary"
+                  className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20"
+                >
+                  截止: {new Date(task.due_date).toLocaleDateString('zh-CN')}
+                </Badge>
               )}
             </div>
           </CardContent>
