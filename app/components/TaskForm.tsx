@@ -20,25 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, "标题不能为空"),
   description: z.string().optional(),
   status: z.enum(["pending", "in_progress", "completed"]),
   priority: z.enum(["low", "medium", "high"]),
-  due_date: z.date().optional(),
+  due_date: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -57,7 +48,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
       description: task?.description || "",
       status: task?.status || "pending",
       priority: task?.priority || "medium",
-      due_date: task?.due_date ? new Date(task.due_date) : undefined,
+      due_date: task?.due_date || "",
     },
   });
 
@@ -70,7 +61,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
           description: values.description || null,
           status: values.status,
           priority: values.priority,
-          due_date: values.due_date ? values.due_date.toISOString() : null,
+          due_date: values.due_date || null,
         });
       } else {
         await createTask({
@@ -78,7 +69,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
           description: values.description || null,
           status: values.status,
           priority: values.priority,
-          due_date: values.due_date ? values.due_date.toISOString() : null,
+          due_date: values.due_date || null,
         });
       }
 
@@ -106,7 +97,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="description"
@@ -124,7 +114,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="status"
@@ -147,7 +136,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="priority"
@@ -157,7 +145,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="选择优先级" />
+                    <SelectValue placeholder="选择任务优先级" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -170,49 +158,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="due_date"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
+            <FormItem>
               <FormLabel>截止日期</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>选择截止日期</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <Button type="submit" className="w-full" disabled={isSubmiting}>
           {isSubmiting ? "保存中" : "保存"}
         </Button>
